@@ -1,6 +1,6 @@
 const Post = require("../models/post");
 
-// CREATE POST
+
 const createPost = async (req, res) => {
   try {
     const { title, content, categories, tags } = req.body;
@@ -39,7 +39,7 @@ const createPost = async (req, res) => {
   }
 };
 
-// READ all posts (with optional category/tag filter)
+
 const getPosts = async (req, res) => {
   try {
     const filter = {};
@@ -58,7 +58,7 @@ const getPosts = async (req, res) => {
   }
 };
 
-// READ single post by ID
+
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate(
@@ -77,7 +77,7 @@ const getPostById = async (req, res) => {
   }
 };
 
-// UPDATE post (author only)
+
 const updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -114,7 +114,7 @@ const updatePost = async (req, res) => {
   }
 };
 
-// DELETE post (author or admin)
+
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -137,7 +137,6 @@ const deletePost = async (req, res) => {
   }
 };
 
-// LIKE / UNLIKE post
 const toggleLike = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -150,9 +149,9 @@ const toggleLike = async (req, res) => {
 
     const userId = req.user.id;
     if (post.likes.includes(userId)) {
-      post.likes.pull(userId); // unlike
+      post.likes.pull(userId); 
     } else {
-      post.likes.push(userId); // like
+      post.likes.push(userId); 
     }
 
     const updatedPost = await post.save();

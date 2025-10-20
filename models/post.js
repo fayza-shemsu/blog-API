@@ -28,8 +28,7 @@ const postSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    createdAt: Date,
-    updatedAt: Date,
+    
   }
 );
         module.exports=mongoose.model("post",postSchema);

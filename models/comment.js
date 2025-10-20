@@ -9,12 +9,12 @@ const commentSchema = new mongoose.Schema(
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to User model
+      ref: "User", 
       required: true,
     },
     post: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post", // Reference to Post model
+      ref: "Post", 
       required: true,
     },
   },

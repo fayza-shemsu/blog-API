@@ -1,7 +1,7 @@
 const Comment = require("../models/comment");
 const Post = require("../models/post");
 
-// ✅ CREATE Comment
+
 const createComment = async (req, res) => {
   try {
     const { content } = req.body;
@@ -10,9 +10,10 @@ const createComment = async (req, res) => {
     if (!content)
       return res.status(400).json({ message: "Content is required" });
 
-    // Verify the post exists
+    
     const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post)
+      return res.status(404).json({ message: "Post not found" });
 
     const comment = await Comment.create({
       content,
@@ -26,7 +27,6 @@ const createComment = async (req, res) => {
   }
 };
 
-// ✅ READ Comments for a Post
 const getCommentsByPost = async (req, res) => {
   try {
     const comments = await Comment.find({ post: req.params.postId })
@@ -39,13 +39,14 @@ const getCommentsByPost = async (req, res) => {
   }
 };
 
-// ✅ UPDATE Comment
+
 const updateComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
-    if (!comment) return res.status(404).json({ message: "Comment not found" });
+    if (!comment)
+      return res.status(404).json({ message: "Comment not found" });
 
-    // Only author or admin can update
+
     if (comment.author.toString() !== req.user.id && req.user.role !== "admin")
       return res.status(403).json({ message: "Unauthorized" });
 
@@ -58,13 +59,14 @@ const updateComment = async (req, res) => {
   }
 };
 
-// ✅ DELETE Comment
+
 const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
-    if (!comment) return res.status(404).json({ message: "Comment not found" });
+    if (!comment)
+      return res.status(404).json({ message: "Comment not found" });
 
-    // Only author or admin
+    
     if (comment.author.toString() !== req.user.id && req.user.role !== "admin")
       return res.status(403).json({ message: "Unauthorized" });
 
