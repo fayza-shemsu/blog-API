@@ -1,85 +1,78 @@
 const express = require("express");
-const router= express.Router();
-const {body}= require("express-validator");
-const {registerUser,loginUser}= require("../controllers/authController");
+const router = express.Router();
+const { body } = require("express-validator");
+const {
+  registerUser,
+  loginUser,
+  verifyEmail, 
+} = require("../controllers/authController");
 
+// ================= ROUTES =================
+
+// ✅ Register route
 router.post(
-"/register",
-[
-   body("name").notEmpty().withMessage("Nameis required"),
-    body("email").isEmail().withMessage("valid email is required"),
-    body("password").isLength({min:6}).withMessage ("password must be at least 6 characters"),
+  "/register",
+  [
+    body("name").notEmpty().withMessage("Name is required"),
+    body("email").isEmail().withMessage("Valid email is required"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
+  ],
+  registerUser
+);
 
-
-],
-registerUser
+// ✅ Login route
+router.post(
+  "/login",
+  [
+    body("email").isEmail().withMessage("Valid email is required"),
+    body("password").exists().withMessage("Password is required"),
+  ],
+  loginUser
 );
 
 
-router.post(
-    "/login",
-    [
-        body ("email").isEmail().withMessage ("valid email is required"),
-        body ("password").exists().withMessage("password is required")
+router.get("/verify/:token", verifyEmail);
 
-    ],
-    loginUser
-);
- module.exports = router;
-
-
-
- /**
+module.exports = router;
+/**
  * @swagger
- * /posts:
- *   get:
- *     summary: Get all posts
- *     description: Retrieve all blog posts (optional filter by category or tag)
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Fayza Shemsu
+ *               email:
+ *                 type: string
+ *                 example: fayza@example.com
+ *               password:
+ *                 type: string
+ *                 example: mypassword123
  *     responses:
- *       200:
- *         description: Success
+ *       201:
+ *         description: User registered successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Post'
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Post:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *         title:
- *           type: string
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation or user exists
  *         content:
- *           type: string
- *         author:
- *           type: string
- *         categories:
- *           type: array
- *           items:
- *             type: string
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *         likes:
- *           type: array
- *           items:
- *             type: string
- *         createdAt:
- *           type: string
- *         updatedAt:
- *           type: string
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */

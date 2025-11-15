@@ -1,4 +1,4 @@
-const mongoose= require("mongoose");
+const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema(
   {
@@ -25,10 +25,18 @@ const postSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+
+    imageUrl: {
+      type: String,
+      default: null,
+    },
+    imagePublicId: {
+      type: String, 
+    },
   },
   {
     timestamps: true,
-    
   }
 );
-        module.exports=mongoose.model("post",postSchema);
+
+module.exports = mongoose.model("post", postSchema);

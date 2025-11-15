@@ -1,4 +1,4 @@
-// Admin-only access middleware
+
 const adminOnly = (req, res, next) => {
   if (!req.user) {
     return res

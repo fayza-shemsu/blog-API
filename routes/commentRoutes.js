@@ -16,55 +16,41 @@ router.delete("/:commentId", protect, deleteComment);
 module.exports = router;
    /**
  * @swagger
- * /posts:
- *   get:
- *     summary: Get all posts
- *     description: Retrieve all blog posts (optional filter by category or tag)
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Fayza Shemsu
+ *               email:
+ *                 type: string
+ *                 example: fayza@example.com
+ *               password:
+ *                 type: string
+ *                 example: mypassword123
  *     responses:
- *       200:
- *         description: Success
+ *       201:
+ *         description: User registered successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Post'
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Post:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *         title:
- *           type: string
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation or user exists
  *         content:
- *           type: string
- *         author:
- *           type: string
- *         categories:
- *           type: array
- *           items:
- *             type: string
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *         likes:
- *           type: array
- *           items:
- *             type: string
- *         createdAt:
- *           type: string
- *         updatedAt:
- *           type: string
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */

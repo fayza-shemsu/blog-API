@@ -1,9 +1,11 @@
 const Post = require("../models/post");
+const cloudinary = require("../config/cloudinary");
 
-
+//  CREATE POST
 const createPost = async (req, res) => {
   try {
-    const { title, content, categories, tags } = req.body;
+    let { title, content, categories, tags } = req.body;
+
     if (!title || !content)
       return res
         .status(400)
@@ -11,16 +13,39 @@ const createPost = async (req, res) => {
 
     const author = req.user.id;
 
+    
+    categories =
+      typeof categories === "string"
+        ? categories.split(",").map((c) => c.trim().toLowerCase())
+        : Array.isArray(categories)
+        ? categories.map((c) => c.trim().toLowerCase())
+        : [];
+
+    tags =
+      typeof tags === "string"
+        ? tags.split(",").map((t) => t.trim().toLowerCase())
+        : Array.isArray(tags)
+        ? tags.map((t) => t.trim().toLowerCase())
+        : [];
+
     const newPost = new Post({
       title,
       content,
       author,
-      categories: (categories || []).map((c) => c.trim().toLowerCase()),
-      tags: (tags || []).map((t) => t.trim().toLowerCase()),
+      categories,
+      tags,
     });
 
-    const savedPost = await newPost.save();
+    // Upload image to Cloudinary 
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blog_images",
+      });
+      newPost.imageUrl = result.secure_url;
+      newPost.imagePublicId = result.public_id;
+    }
 
+    const savedPost = await newPost.save();
     const populatedPost = await savedPost.populate(
       "author",
       "username email role"
@@ -39,7 +64,7 @@ const createPost = async (req, res) => {
   }
 };
 
-
+//  GET ALL POSTS
 const getPosts = async (req, res) => {
   try {
     const filter = {};
@@ -58,7 +83,7 @@ const getPosts = async (req, res) => {
   }
 };
 
-
+//  GET POST BY ID
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate(
@@ -77,7 +102,7 @@ const getPostById = async (req, res) => {
   }
 };
 
-
+// UPDATE POST (with optional image replacement)
 const updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -89,13 +114,51 @@ const updatePost = async (req, res) => {
     if (post.author.toString() !== req.user.id)
       return res.status(403).json({ success: false, message: "Unauthorized" });
 
-    const { title, content, categories, tags } = req.body;
+    let { title, content, categories, tags } = req.body;
 
     if (title) post.title = title;
     if (content) post.content = content;
-    if (categories)
-      post.categories = categories.map((c) => c.trim().toLowerCase());
-    if (tags) post.tags = tags.map((t) => t.trim().toLowerCase());
+
+    
+    if (categories) {
+      categories =
+        typeof categories === "string"
+          ? categories.split(",").map((c) => c.trim().toLowerCase())
+          : Array.isArray(categories)
+          ? categories.map((c) => c.trim().toLowerCase())
+          : [];
+      post.categories = categories;
+    }
+
+    if (tags) {
+      tags =
+        typeof tags === "string"
+          ? tags.split(",").map((t) => t.trim().toLowerCase())
+          : Array.isArray(tags)
+          ? tags.map((t) => t.trim().toLowerCase())
+          : [];
+      post.tags = tags;
+    }
+
+    // Handle image update
+    if (req.file) {
+      // delete old image from Cloudinary
+      if (post.imagePublicId) {
+        try {
+          await cloudinary.uploader.destroy(post.imagePublicId);
+        } catch (err) {
+          console.error("Failed to delete old image:", err);
+        }
+      }
+
+      // upload new image to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blog_images",
+      });
+
+      post.imageUrl = result.secure_url;
+      post.imagePublicId = result.public_id;
+    }
 
     const updatedPost = await post.save();
     const populatedPost = await updatedPost.populate(
@@ -114,7 +177,6 @@ const updatePost = async (req, res) => {
   }
 };
 
-
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -127,6 +189,15 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
+    
+    if (post.imagePublicId) {
+      try {
+        await cloudinary.uploader.destroy(post.imagePublicId);
+      } catch (err) {
+        console.error("Failed to delete image from Cloudinary:", err);
+      }
+    }
+
     await post.deleteOne();
     res
       .status(200)
@@ -136,6 +207,7 @@ const deletePost = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 const toggleLike = async (req, res) => {
   try {
@@ -149,9 +221,9 @@ const toggleLike = async (req, res) => {
 
     const userId = req.user.id;
     if (post.likes.includes(userId)) {
-      post.likes.pull(userId); 
+      post.likes.pull(userId);
     } else {
-      post.likes.push(userId); 
+      post.likes.push(userId);
     }
 
     const updatedPost = await post.save();
